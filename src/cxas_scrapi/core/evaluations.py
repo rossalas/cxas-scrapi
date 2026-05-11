@@ -987,9 +987,12 @@ class Evaluations(Common):
 
         if existing_exp:
             if existing_exp.llm_criteria.prompt != llm_prompt:
-                raise ValueError(
-                    f"Evaluation expectation '{display_name}' already exists "
-                    "with a different prompt."
+                existing_exp.llm_criteria.prompt = llm_prompt
+                from google.protobuf import field_mask_pb2
+                update_mask = field_mask_pb2.FieldMask(paths=["llm_criteria.prompt"])
+                self.update_evaluation_expectation(
+                    evaluation_expectation=existing_exp,
+                    update_mask=update_mask,
                 )
             return existing_exp.name
 

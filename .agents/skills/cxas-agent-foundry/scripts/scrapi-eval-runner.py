@@ -162,9 +162,18 @@ def cmd_push(args):
         expect_criteria = ev.get("expect_criteria", [])
         meta_expectations = meta.get("expectations", {})
         if expect_criteria and meta_expectations:
-            scenario["evaluationExpectations"] = [
-                meta_expectations[c] for c in expect_criteria if c in meta_expectations
-            ]
+            scenario["evaluationExpectations"] = []
+            for c in expect_criteria:
+                if c in meta_expectations:
+                    prompt = meta_expectations[c]
+                    try:
+                        res_name = client.find_or_create_evaluation_expectation(
+                            display_name=c,
+                            llm_prompt=prompt
+                        )
+                        scenario["evaluationExpectations"].append(res_name)
+                    except Exception as e:
+                        console.print(f"  Warning: Failed to find/create expectation {c}: {e}")
 
         eval_payload = {"displayName": name, "scenario": scenario}
 
